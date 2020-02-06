@@ -217,4 +217,5 @@ std::vector<GLuint> ViewerApplication::createBufferObjects(const tinygltf::Model
 	      model.buffers[i].data.data(), 0);
 	}
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	return bufferObjects;
 }
