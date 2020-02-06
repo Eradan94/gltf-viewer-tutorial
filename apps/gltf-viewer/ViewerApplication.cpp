@@ -63,10 +63,10 @@ int ViewerApplication::run()
   tinygltf::Model model;
   loadGltfFile(model);
 
-  // TODO Creation of Buffer Objects
+  // Creation of Buffer Objects
   std::vector<GLuint> buffers = createBufferObjects(model);
 
-  // TODO Creation of Vertex Array Objects
+  // Creation of Vertex Array Objects
   std::vector<VaoRange> vaoRange;
   std::vector<GLuint> vaos = createVertexArrayObjects(model, buffers, vaoRange);
 
@@ -90,7 +90,10 @@ int ViewerApplication::run()
 
     // Draw the scene referenced by gltf file
     if (model.defaultScene >= 0) {
-      // TODO Draw all nodes
+    	//Draw all nodes
+    	for(int i = 0; i < model.scenes[model.defaultScene].nodes.size(); i++) {
+    		drawNode(i, glm::mat4(1));
+    	}
     }
   };
 
@@ -243,16 +246,16 @@ std::vector<GLuint> ViewerApplication::createVertexArrayObjects(const tinygltf::
 				glBindVertexArray(vao);
 				// (*iterator).first is the key "POSITION", (*iterator).second is the value, ie. the index of the accessor for this attribute
 				const auto accessorIdx = (*iterator).second;
-				const auto &accessor = model.accessors[accessorIdx]; // TODO get the correct tinygltf::Accessor from model.accessors
-				const auto &bufferView = model.bufferViews[accessor.bufferView]; // TODO get the correct tinygltf::BufferView from model.bufferViews. You need to use the accessor
-				const auto bufferIdx = bufferView.buffer; // TODO get the index of the buffer used by the bufferView (you need to use it
-				const auto bufferObject = bufferObjects[bufferIdx];// TODO get the correct buffer object from the buffer index
+				const auto &accessor = model.accessors[accessorIdx]; // get the correct tinygltf::Accessor from model.accessors
+				const auto &bufferView = model.bufferViews[accessor.bufferView]; // get the correct tinygltf::BufferView from model.bufferViews. You need to use the accessor
+				const auto bufferIdx = bufferView.buffer; // get the index of the buffer used by the bufferView (you need to use it
+				const auto bufferObject = bufferObjects[bufferIdx];// get the correct buffer object from the buffer index
 
-				glEnableVertexAttribArray(VERTEX_ATTRIB_POSITION_IDX); // TODO Enable the vertex attrib array corresponding to POSITION with glEnableVertexAttribArray (you need to use VERTEX_ATTRIB_POSITION_IDX which has to be defined at the top of the cpp file)
-				glBindBuffer(GL_ARRAY_BUFFER, bufferObjects[bufferIdx]); // TODO Bind the buffer object to GL_ARRAY_BUFFER
+				glEnableVertexAttribArray(VERTEX_ATTRIB_POSITION_IDX); // Enable the vertex attrib array corresponding to POSITION with glEnableVertexAttribArray (you need to use VERTEX_ATTRIB_POSITION_IDX which has to be defined at the top of the cpp file)
+				glBindBuffer(GL_ARRAY_BUFFER, bufferObjects[bufferIdx]); // Bind the buffer object to GL_ARRAY_BUFFER
 
 				const auto byteOffset = accessor.byteOffset + bufferView.byteOffset;// TODO Compute the total byte offset using the accessor and the buffer view
-				// TODO Call glVertexAttribPointer with the correct arguments. 
+				// Call glVertexAttribPointer with the correct arguments. 
 				glVertexAttribPointer(VERTEX_ATTRIB_POSITION_IDX, accessor.type, accessor.componentType, GL_FALSE, bufferView.byteStride, (const GLvoid*)byteOffset);
 				// Remember size is obtained with accessor.type, type is obtained with accessor.componentType. 
 				// The stride is obtained in the bufferView, normalized is always GL_FALSE, and pointer is the byteOffset (don't forget the cast).
@@ -263,13 +266,13 @@ std::vector<GLuint> ViewerApplication::createVertexArrayObjects(const tinygltf::
 				glBindVertexArray(vao);
 				// (*iterator).first is the key "POSITION", (*iterator).second is the value, ie. the index of the accessor for this attribute
 				const auto accessorIdx = (*iterator).second;
-				const auto &accessor = model.accessors[accessorIdx]; // TODO get the correct tinygltf::Accessor from model.accessors
-				const auto &bufferView = model.bufferViews[accessor.bufferView]; // TODO get the correct tinygltf::BufferView from model.bufferViews. You need to use the accessor
-				const auto bufferIdx = bufferView.buffer; // TODO get the index of the buffer used by the bufferView (you need to use it
-				const auto bufferObject = bufferObjects[bufferIdx];// TODO get the correct buffer object from the buffer index
+				const auto &accessor = model.accessors[accessorIdx]; // get the correct tinygltf::Accessor from model.accessors
+				const auto &bufferView = model.bufferViews[accessor.bufferView]; //  et the correct tinygltf::BufferView from model.bufferViews. You need to use the accessor
+				const auto bufferIdx = bufferView.buffer; // get the index of the buffer used by the bufferView (you need to use it
+				const auto bufferObject = bufferObjects[bufferIdx];// get the correct buffer object from the buffer index
 
-				glEnableVertexAttribArray(VERTEX_ATTRIB_POSITION_IDX); // TODO Enable the vertex attrib array corresponding to POSITION with glEnableVertexAttribArray (you need to use VERTEX_ATTRIB_POSITION_IDX which has to be defined at the top of the cpp file)
-				glBindBuffer(GL_ARRAY_BUFFER, bufferObjects[bufferIdx]); // TODO Bind the buffer object to GL_ARRAY_BUFFER
+				glEnableVertexAttribArray(VERTEX_ATTRIB_POSITION_IDX); //TODO Enable the vertex attrib array corresponding to POSITION with glEnableVertexAttribArray (you need to use VERTEX_ATTRIB_POSITION_IDX which has to be defined at the top of the cpp file)
+				glBindBuffer(GL_ARRAY_BUFFER, bufferObjects[bufferIdx]); // Bind the buffer object to GL_ARRAY_BUFFER
 
 				const auto byteOffset = accessor.byteOffset + bufferView.byteOffset;// TODO Compute the total byte offset using the accessor and the buffer view
 				// TODO Call glVertexAttribPointer with the correct arguments. 
@@ -283,14 +286,14 @@ std::vector<GLuint> ViewerApplication::createVertexArrayObjects(const tinygltf::
 				glBindVertexArray(vao);
 				// (*iterator).first is the key "POSITION", (*iterator).second is the value, ie. the index of the accessor for this attribute
 				const auto accessorIdx = (*iterator).second;
-				const auto &accessor = model.accessors[accessorIdx]; // TODO get the correct tinygltf::Accessor from model.accessors
-				const auto &bufferView = model.bufferViews[accessor.bufferView]; // TODO get the correct tinygltf::BufferView from model.bufferViews. You need to use the accessor
-				const auto bufferIdx = bufferView.buffer; // TODO get the index of the buffer used by the bufferView (you need to use it
-				const auto bufferObject = bufferObjects[bufferIdx];// TODO get the correct buffer object from the buffer index
+				const auto &accessor = model.accessors[accessorIdx]; // get the correct tinygltf::Accessor from model.accessors
+				const auto &bufferView = model.bufferViews[accessor.bufferView]; // get the correct tinygltf::BufferView from model.bufferViews. You need to use the accessor
+				const auto bufferIdx = bufferView.buffer; // get the index of the buffer used by the bufferView (you need to use it
+				const auto bufferObject = bufferObjects[bufferIdx];// get the correct buffer object from the buffer index
 
 
-				glEnableVertexAttribArray(VERTEX_ATTRIB_TEXCOORD0_IDX); // TODO Enable the vertex attrib array corresponding to POSITION with glEnableVertexAttribArray (you need to use VERTEX_ATTRIB_POSITION_IDX which has to be defined at the top of the cpp file)
-				glBindBuffer(GL_ARRAY_BUFFER, bufferObjects[bufferIdx]); // TODO Bind the buffer object to GL_ARRAY_BUFFER
+				glEnableVertexAttribArray(VERTEX_ATTRIB_TEXCOORD0_IDX); // Enable the vertex attrib array corresponding to POSITION with glEnableVertexAttribArray (you need to use VERTEX_ATTRIB_POSITION_IDX which has to be defined at the top of the cpp file)
+				glBindBuffer(GL_ARRAY_BUFFER, bufferObjects[bufferIdx]); // Bind the buffer object to GL_ARRAY_BUFFER
 
 				const auto byteOffset = accessor.byteOffset + bufferView.byteOffset;// TODO Compute the total byte offset using the accessor and the buffer view
 				// TODO Call glVertexAttribPointer with the correct arguments. 
@@ -301,8 +304,8 @@ std::vector<GLuint> ViewerApplication::createVertexArrayObjects(const tinygltf::
 			if(model.meshes[i].primitives[j].indices >= 0) {
 				const auto &accessor = model.accessors[model.meshes[i].primitives[j].indices];
 				const auto &bufferView = model.bufferViews[accessor.bufferView];
-				const auto bufferIdx = bufferView.buffer; // TODO get the index of the buffer used by the bufferView (you need to use it
-				const auto bufferObject = bufferObjects[bufferIdx];// TODO get the correct buffer object from the buffer index
+				const auto bufferIdx = bufferView.buffer; // get the index of the buffer used by the bufferView (you need to use it
+				const auto bufferObject = bufferObjects[bufferIdx];// get the correct buffer object from the buffer index
 				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferObjects[bufferIdx]);
 			}
 		}
