@@ -16,8 +16,6 @@ public:
       const fs::path &output);
 
   int run();
-  bool loadGltfFile(tinygltf::Model & model);
-  std::vector<GLuint> createBufferObjects(const tinygltf::Model &model);
 
 private:
   // A range of indices in a vector containing Vertex Array Objects
@@ -60,4 +58,8 @@ private:
     the creation of a GLFW windows and thus a GL context which must exists
     before most of OpenGL function calls.
   */
+
+    bool loadGltfFile(tinygltf::Model & model);
+  std::vector<GLuint> createBufferObjects(const tinygltf::Model &model);
+  std::vector<GLuint> createVertexArrayObjects(const tinygltf::Model& model, const std::vector<GLuint> &bufferObjects, std::vector<VaoRange>& meshIndexToVaoRange);
 };
