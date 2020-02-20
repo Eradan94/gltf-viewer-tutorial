@@ -43,6 +43,12 @@ int ViewerApplication::run()
   const auto normalMatrixLocation =
       glGetUniformLocation(glslProgram.glId(), "uNormalMatrix");
 
+  const auto lightDirectionLocation =
+      glGetUniformLocation(glslProgram.glId(), "uLightDir");
+  const auto lightIntensityLocation =
+      glGetUniformLocation(glslProgram.glId(), "uLightIntensity");
+
+
     tinygltf::Model model;
   	loadGltfFile(model);
   	glm::vec3 bboxMin, bboxMax;
@@ -76,6 +82,11 @@ int ViewerApplication::run()
   // Creation of Buffer Objects
   std::vector<GLuint> buffers = createBufferObjects(model);
 
+  bool lightFromCamera = false;
+
+  glm::vec3 lightIntensity(1., 1., 1.);
+  glm::vec3 lightDirection(1., 1., 1.);
+
   // Creation of Vertex Array Objects
   std::vector<VaoRange> meshToVertexArrays;
   std::vector<GLuint> vaos = createVertexArrayObjects(model, buffers, meshToVertexArrays);
@@ -104,6 +115,21 @@ int ViewerApplication::run()
         		glUniformMatrix4fv(modelViewProjMatrixLocation, 1, GL_FALSE, glm::value_ptr(modelViewProjectionMatrix));
         		glUniformMatrix4fv(modelViewMatrixLocation, 1, GL_FALSE, glm::value_ptr(modelViewMatrix));
         		glUniformMatrix4fv(normalMatrixLocation, 1, GL_FALSE, glm::value_ptr(normalMatrix));
+            if(lightIntensityLocation >= 0) {
+                glUniform3f(lightIntensityLocation, lightIntensity.x, lightIntensity.y, lightIntensity.z);
+            }
+            if(lightDirectionLocation >= 0) {
+                //const auto lightDirectionView = glm::normalize(glm::vec3(viewMatrix * glm::vec4(lightDirection, 0.)));
+                //glUniform3f(lightDirectionLocation, lightDirectionView.x, lightDirectionView.y, lightDirectionView.z);
+              if (lightFromCamera) {
+                glUniform3f(lightDirectionLocation, 0, 0, 1);
+              } else {
+                const auto lightDirectionInViewSpace = glm::normalize(
+                    glm::vec3(viewMatrix * glm::vec4(lightDirection, 0.)));
+                glUniform3f(lightDirectionLocation, lightDirectionInViewSpace[0],
+                    lightDirectionInViewSpace[1], lightDirectionInViewSpace[2]);
+              }
+            }        
         		const auto& mesh = model.meshes[node.mesh];
         		const auto& range = meshToVertexArrays[node.mesh];
         		for(int i = 0; i < mesh.primitives.size(); i++) {
@@ -123,11 +149,10 @@ int ViewerApplication::run()
         			}
         		}
         	}
-
-          	// Draw children
-          	for (const auto childNodeIdx : node.children) {
-            	drawNode(childNodeIdx, modelMatrix);
-          	}
+          // Draw children
+          for (const auto childNodeIdx : node.children) {
+            drawNode(childNodeIdx, modelMatrix);
+          }
         };
     // Draw the scene referenced by gltf file
     if (model.defaultScene >= 0) {
@@ -186,6 +211,24 @@ int ViewerApplication::run()
           }
           cameraController->setCamera(currentCamera);
         }
+
+        if (ImGui::CollapsingHeader("Light", ImGuiTreeNodeFlags_DefaultOpen)) {
+          static float lightTheta = 0.f;
+          static float lightPhi = 0.f;
+          if (ImGui::SliderFloat("theta", &lightTheta, 0, glm::pi<float>()) || ImGui::SliderFloat("phi", &lightPhi, 0, 2.f * glm::pi<float>())) {
+            const auto sinPhi = glm::sin(lightPhi);
+            const auto cosPhi = glm::cos(lightPhi);
+            const auto sinTheta = glm::sin(lightTheta);
+            const auto cosTheta = glm::cos(lightTheta);
+            lightDirection = glm::vec3(sinTheta * cosPhi, cosTheta, sinTheta * sinPhi);
+          }
+          static glm::vec3 lightColor(1.f, 1.f, 1.f);
+          static float lightIntensityFactor = 1.f;
+          if (ImGui::ColorEdit3("color", (float *)&lightColor) || ImGui::InputFloat("intensity", &lightIntensityFactor)) {
+            lightIntensity = lightColor * lightIntensityFactor;
+          }
+          ImGui::Checkbox("light from camera", &lightFromCamera);
+        }        
       }
       ImGui::End();
     }
