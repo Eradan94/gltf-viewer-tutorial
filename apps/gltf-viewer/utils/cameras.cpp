@@ -107,4 +107,65 @@ bool FirstPersonCameraController::update(float elapsedTime)
   return true;
 }
 
-bool TrackballCameraController::update(float elapsedTime) { return false; }
+bool TrackballCameraController::update(float elapsedTime) { 
+  if (glfwGetMouseButton(m_pWindow, GLFW_MOUSE_BUTTON_MIDDLE) &&
+      !m_MiddleButtonPressed) {
+    m_MiddleButtonPressed = true;
+    glfwGetCursorPos(
+        m_pWindow, &m_LastCursorPosition.x, &m_LastCursorPosition.y);
+  } else if (!glfwGetMouseButton(m_pWindow, GLFW_MOUSE_BUTTON_MIDDLE) &&
+             m_MiddleButtonPressed) {
+    m_MiddleButtonPressed = false;
+  }
+
+  const auto cursorDelta = ([&]() {
+    if (m_MiddleButtonPressed) {
+      dvec2 cursorPosition;
+      glfwGetCursorPos(m_pWindow, &cursorPosition.x, &cursorPosition.y);
+      const auto delta = cursorPosition - m_LastCursorPosition;
+      m_LastCursorPosition = cursorPosition;
+      return delta;
+    }
+    return dvec2(0);
+  })();
+
+  bool hasMoved = false;
+
+  if (glfwGetKey(m_pWindow, GLFW_KEY_LEFT_SHIFT)) { //Pan
+    const float truckLeft = 0.01f * float(cursorDelta.x);
+    const float pedestalUp = 0.01f * float(cursorDelta.y);
+    m_camera.moveLocal(truckLeft, pedestalUp, 0.f);
+        if (!hasMoved) {
+      return false;
+    }
+    return true;
+  }
+
+  if (glfwGetKey(m_pWindow, GLFW_KEY_LEFT_CONTROL)) { //zoom
+    const float dolly = 0.01f * cursorDelta.y;
+    const auto viewVector = m_camera.center() - m_camera.eye();
+    const auto translation = viewVector * dolly;
+    glm::vec3 newEye = m_camera.eye() + translation;
+    m_camera = Camera(newEye, m_camera.center(), m_worldUpAxis);
+    if (!hasMoved) {
+      return false;
+    }
+    return true;
+  }
+    //rotate around target
+    const float longitudeAngle = 0.01f * cursorDelta.y;
+    const float latitudeAngle = -0.01f * cursorDelta.x;
+
+    const auto depthAxis = m_camera.eye() - m_camera.center();
+    const auto horizontalAxis = m_camera.left();
+    const auto longitudeRotationMatrix = rotate(mat4(1), longitudeAngle, horizontalAxis);
+    auto rotatedDepthAxis = vec3(longitudeRotationMatrix * vec4(depthAxis, 0));
+    const auto latitudeRotationMatrix = rotate(mat4(1), latitudeAngle, m_worldUpAxis);
+    const auto finalDepthAxis = vec3(latitudeRotationMatrix * vec4(rotatedDepthAxis, 0));
+    const auto newEye = m_camera.center() + finalDepthAxis;
+    m_camera = Camera(newEye, m_camera.center(), m_worldUpAxis);
+    if (!hasMoved) {
+      return false;
+    }
+  return true; 
+}

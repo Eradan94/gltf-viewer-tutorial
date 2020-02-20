@@ -46,6 +46,14 @@ public:
     m_center += translationVector;
   }
 
+  void dollyInTrackBall(float offset)
+  {
+    const auto front = normalize(m_center - m_eye);
+    const auto translationVector = offset * front;
+    m_eye += translationVector;
+    m_center += translationVector;
+  }
+
   void moveLocal(float truckLeftOffset, float pedestalUpOffset, float dollyIn)
   {
     const auto front = normalize(m_center - m_eye);

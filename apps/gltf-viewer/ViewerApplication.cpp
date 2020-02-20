@@ -55,8 +55,9 @@ int ViewerApplication::run()
       glm::perspective(70.f, float(m_nWindowWidth) / m_nWindowHeight,
           0.001f * maxDistance, 1.5f * maxDistance);
 
-  FirstPersonCameraController cameraController{
-      m_GLFWHandle.window(), 0.75f * maxDistance};
+  /*FirstPersonCameraController cameraController{
+      m_GLFWHandle.window(), 0.75f * maxDistance};*/
+    TrackballCameraController cameraController{m_GLFWHandle.window(), 0.75f * maxDistance}; // locked, for now
   if (m_hasUserCamera) {
     cameraController.setCamera(m_userCamera);
   } else {
