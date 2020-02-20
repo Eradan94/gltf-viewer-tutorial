@@ -59,7 +59,8 @@ private:
     before most of OpenGL function calls.
   */
 
-    bool loadGltfFile(tinygltf::Model & model);
+  bool loadGltfFile(tinygltf::Model & model);
+  std::vector<GLuint> createTextureObjects(const tinygltf::Model &model) const;
   std::vector<GLuint> createBufferObjects(const tinygltf::Model &model);
   std::vector<GLuint> createVertexArrayObjects(const tinygltf::Model &model, const std::vector<GLuint> &bufferObjects, std::vector<VaoRange>& meshToVertexArrays);
 };

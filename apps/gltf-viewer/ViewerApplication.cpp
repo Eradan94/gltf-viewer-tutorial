@@ -29,6 +29,36 @@ void keyCallback(
   }
 }
 
+std::vector<GLuint> ViewerApplication::createTextureObjects(const tinygltf::Model &model) const {
+  std::vector<GLuint> textures(model.textures.size());
+  glGenTextures(model.textures.size(), &textures[0]);
+
+  tinygltf::Sampler defaultSampler;
+  defaultSampler.minFilter = GL_LINEAR;
+  defaultSampler.magFilter = GL_LINEAR;
+  defaultSampler.wrapS = GL_REPEAT;
+  defaultSampler.wrapT = GL_REPEAT;
+  defaultSampler.wrapR = GL_REPEAT;
+
+  for(int i = 0; i < model.textures.size(); i++) {
+    const auto &texture = model.textures[i];
+    glBindTexture(GL_TEXTURE_2D, textures[i]);
+    assert(texture.source >= 0); // ensure a source image is present
+    const auto &image = model.images[texture.source]; // get the image
+    // fill the texture object with the data from the image
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.width, image.height, 0, GL_RGBA, image.pixel_type, image.image.data());
+
+    const auto &sampler = texture.sampler >= 0 ? model.samplers[texture.sampler] : defaultSampler;
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, sampler.minFilter != -1 ? sampler.minFilter : GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, sampler.magFilter != -1 ? sampler.magFilter : GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, sampler.wrapS);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, sampler.wrapT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, sampler.wrapR);
+  }
+  glBindTexture(GL_TEXTURE_2D, 0);
+  return textures;
+}
+
 int ViewerApplication::run()
 {
   // Loader shaders
@@ -79,6 +109,21 @@ int ViewerApplication::run()
     	cameraController->setCamera(Camera{eye, center, up});
   }
 
+  std::vector<GLuint> textures = createTextureObjects(model);
+  GLuint whiteTexture;
+  float white[] = {1, 1, 1, 1};
+  glGenTextures(1, &whiteTexture);
+  glBindTexture(GL_TEXTURE_2D, whiteTexture); // Bind to target GL_TEXTURE_2D
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 2, 2, 0, GL_RGB, GL_FLOAT, white); // Set image data
+  // Set sampling parameters
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  // Set wrapping parameters
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_REPEAT);
+  glBindTexture(GL_TEXTURE_2D, 0);
+
   // Creation of Buffer Objects
   std::vector<GLuint> buffers = createBufferObjects(model);
 
@@ -119,8 +164,6 @@ int ViewerApplication::run()
                 glUniform3f(lightIntensityLocation, lightIntensity.x, lightIntensity.y, lightIntensity.z);
             }
             if(lightDirectionLocation >= 0) {
-                //const auto lightDirectionView = glm::normalize(glm::vec3(viewMatrix * glm::vec4(lightDirection, 0.)));
-                //glUniform3f(lightDirectionLocation, lightDirectionView.x, lightDirectionView.y, lightDirectionView.z);
               if (lightFromCamera) {
                 glUniform3f(lightDirectionLocation, 0, 0, 1);
               } else {
