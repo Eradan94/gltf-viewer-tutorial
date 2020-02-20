@@ -151,7 +151,16 @@ private:
   glm::vec3 m_up;
 };
 
-class FirstPersonCameraController
+class CameraController {
+	public : 
+		virtual bool update(float elapsedTime) = 0;
+		virtual const Camera &getCamera() const = 0;
+		virtual void setCamera(const Camera &camera) = 0;
+	private :
+		 
+};
+
+class FirstPersonCameraController : public CameraController
 {
 public:
   FirstPersonCameraController(GLFWwindow *window, float speed = 1.f,
@@ -204,7 +213,7 @@ private:
 };
 
 // todo Blender like camera
-class TrackballCameraController
+class TrackballCameraController : public CameraController
 {
 public:
   TrackballCameraController(GLFWwindow *window, float speed = 1.f,
