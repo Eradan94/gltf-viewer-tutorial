@@ -89,6 +89,9 @@ int ViewerApplication::run()
   const auto uEmissivTexture = glGetUniformLocation(glslProgram.glId(), "uEmissivTexture");
   const auto uEmissivFactor = glGetUniformLocation(glslProgram.glId(), "uEmissivFactor");
 
+  const auto uOcclusionTexture = glGetUniformLocation(glslProgram.glId(), "uOcclusionTexture");
+  const auto uOcclusionFactor = glGetUniformLocation(glslProgram.glId(), "uOcclusionFactor");
+
 
     tinygltf::Model model;
   	loadGltfFile(model);
@@ -158,6 +161,7 @@ int ViewerApplication::run()
             const auto &material = model.materials[materialIndex];
             const auto &pbrMetallicRoughness = material.pbrMetallicRoughness;
             const auto &emissiv = material.emissiveTexture;
+            const auto &occlusion = material.occlusionTexture;
 
             if (uBaseColorTexture >= 0) {
                 auto textureObject = whiteTexture;
@@ -216,6 +220,22 @@ int ViewerApplication::run()
                 glBindTexture(GL_TEXTURE_2D, textureObject);
                 glUniform1i(uEmissivTexture, 2);
             }
+
+            if(uOcclusionFactor >= 0) {
+                glUniform1f(uOcclusionFactor, (float)occlusion.strength);
+            }
+            if(uOcclusionTexture >= 0) {
+                auto textureObject = 0;
+                if (occlusion.index >= 0) {
+                    const auto &texture = model.textures[occlusion.index];
+                    if (texture.source >= 0) {
+                        textureObject = textures[texture.source];
+                    }
+                }
+                glActiveTexture(GL_TEXTURE3);
+                glBindTexture(GL_TEXTURE_2D, textureObject);
+                glUniform1i(uOcclusionTexture, 3);
+            }
         }
         else {
             if (uBaseColorFactor >= 0) {
@@ -241,9 +261,17 @@ int ViewerApplication::run()
                 glUniform3f(uEmissivFactor, 0.f, 0.f, 0.f);
             }
             if(uEmissivTexture >= 0) {
-                glActiveTexture(GL_TEXTURE0);
+                glActiveTexture(GL_TEXTURE2);
                 glBindTexture(GL_TEXTURE_2D, 0);
-                glUniform1i(uEmissivTexture, 0);
+                glUniform1i(uEmissivTexture, 2);
+            }
+            if(uOcclusionFactor >= 0) {
+                glUniform1f(uOcclusionFactor, 1.f);
+            }
+            if(uOcclusionTexture >= 0) {
+                glActiveTexture(GL_TEXTURE3);
+                glBindTexture(GL_TEXTURE_2D, 0);
+                glUniform1i(uOcclusionTexture, 3);
             }
         }
     };
